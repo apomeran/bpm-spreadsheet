@@ -1,11 +1,15 @@
+package com.it.itba.bpm;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
@@ -21,17 +25,21 @@ public class OAuthConnector {
 
 	// Retrieve the CLIENT_ID and CLIENT_SECRET from an APIs Console project:
 	// https://code.google.com/apis/console
-	static String CLIENT_ID = "876335379105-9oq8o26bftg9r4mgo68543ahh4bbmlnf.apps.googleusercontent.com";
-	static String CLIENT_SECRET = "giCDIfgqMkRKHDM6wf2ZH-Bi";
+	static String CLIENT_ID;
+	static String CLIENT_SECRET;
 	// Change the REDIRECT_URI value to your registered redirect URI for web
 	// applications.
-	static String REDIRECT_URI = "http://localhost:8089/callback";
+	static String REDIRECT_URI;
 	// Add other requested scopes.
 	static List<String> SCOPES = Arrays
 			.asList("https://spreadsheets.google.com/feeds");
 
 	public static void main(String args[]) throws IOException, ServiceException {
-
+        Properties properties = loadProperties();
+        CLIENT_ID = properties.getProperty("client_id");
+        CLIENT_SECRET = properties.getProperty("client_secret");
+        REDIRECT_URI = properties.getProperty("http://localhost:8089/callback");
+        
 		Credential credential = getRefreshToken();
 		if (credential == null) { // First time calling
 			credential = getCredentials();
@@ -59,11 +67,11 @@ public class OAuthConnector {
 
 			while (rtokenLine != null && atokenLine != null) {
 				rtokenBuilder.append(rtokenLine);
-				//rtokenBuilder.append(System.lineSeparator());
+				// rtokenBuilder.append(System.lineSeparator());
 				rtokenLine = rTokenbf.readLine();
 
 				atokenBuilder.append(atokenLine);
-				//atokenBuilder.append(System.lineSeparator());
+				// atokenBuilder.append(System.lineSeparator());
 				atokenLine = aTokenbf.readLine();
 			}
 			rToken = rtokenBuilder.toString();
@@ -83,7 +91,7 @@ public class OAuthConnector {
 
 		if (aToken.contains("null") || rToken.contains("null"))
 			return null;
-		//System.out.println(aToken + rToken);
+		// System.out.println(aToken + rToken);
 		return new GoogleCredential.Builder()
 				.setClientSecrets(CLIENT_ID, CLIENT_SECRET)
 				.setJsonFactory(jsonFactory).setTransport(transport).build()
@@ -129,13 +137,38 @@ public class OAuthConnector {
 		PrintWriter outRefreshToken = new PrintWriter("rtoken.txt");
 		outRefreshToken.println(response.getRefreshToken());
 		outRefreshToken.close();
-		
+
 		// Build a new GoogleCredential instance and return it.
 		return new GoogleCredential.Builder()
 				.setClientSecrets(CLIENT_ID, CLIENT_SECRET)
 				.setJsonFactory(jsonFactory).setTransport(transport).build()
 				.setAccessToken(response.getAccessToken())
 				.setRefreshToken(response.getRefreshToken());
+	}
+
+	public static Properties loadProperties() {
+		Properties prop = new Properties();
+		InputStream input = null;
+
+		try {
+
+			input = new FileInputStream("src/main/resources/config.properties");
+
+			// load a properties file
+			prop.load(input);
+
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return prop;
 	}
 
 }
