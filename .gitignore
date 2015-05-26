@@ -5,3 +5,4 @@ atoken.txt
 rtoken.txt
 .classpath
 .project
+src/main/resources/config.properties
