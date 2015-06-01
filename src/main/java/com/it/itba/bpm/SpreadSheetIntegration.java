@@ -37,25 +37,25 @@ public class SpreadSheetIntegration {
 
 	static void printDocumentContent(int index) throws IOException,
 			ServiceException {
-		List<com.google.gdata.data.spreadsheet.SpreadsheetEntry> spreadsheets = getFeed();
+		final List<com.google.gdata.data.spreadsheet.SpreadsheetEntry> spreadsheets = getFeed();
 
-		com.google.gdata.data.spreadsheet.SpreadsheetEntry spreadsheet = spreadsheets
+		final com.google.gdata.data.spreadsheet.SpreadsheetEntry spreadsheet = spreadsheets
 				.get(index);
 		System.out.println(spreadsheet.getTitle().getPlainText());
 		// Get the first worksheet of the first spreadsheet.
 		// TODO: Choose a worksheet more intelligently based on your
 		// app's needs.
-		WorksheetFeed worksheetFeed = service.getFeed(
+		final WorksheetFeed worksheetFeed = service.getFeed(
 				spreadsheet.getWorksheetFeedUrl(), WorksheetFeed.class);
-		List<WorksheetEntry> worksheets = worksheetFeed.getEntries();
-		WorksheetEntry worksheet = worksheets.get(0);
+		final List<WorksheetEntry> worksheets = worksheetFeed.getEntries();
+		final WorksheetEntry worksheet = worksheets.get(0);
 
 		// Fetch the cell feed of the worksheet.
-		URL cellFeedUrl = worksheet.getCellFeedUrl();
-		CellFeed cellFeed = service.getFeed(cellFeedUrl, CellFeed.class);
+		final URL cellFeedUrl = worksheet.getCellFeedUrl();
+		final CellFeed cellFeed = service.getFeed(cellFeedUrl, CellFeed.class);
 
 		// Iterate through each cell, printing its value.
-		for (CellEntry cell : cellFeed.getEntries()) {
+		for (final CellEntry cell : cellFeed.getEntries()) {
 			// Print the cell's address in A1 notation
 			System.out.print(cell.getTitle().getPlainText() + "\t");
 			// Print the cell's address in R1C1 notation
@@ -74,9 +74,9 @@ public class SpreadSheetIntegration {
 	}
 
 	static void printDocumentsTitles() throws IOException, ServiceException {
-		List<com.google.gdata.data.spreadsheet.SpreadsheetEntry> spreadsheets = getFeed();
+		final List<com.google.gdata.data.spreadsheet.SpreadsheetEntry> spreadsheets = getFeed();
 		System.out.println("Printing all Documents Titles");
-		for (SpreadsheetEntry spreadsheetEntry : spreadsheets) {
+		for (final SpreadsheetEntry spreadsheetEntry : spreadsheets) {
 			System.out.println(spreadsheetEntry.getTitle().getPlainText());
 		}
 
@@ -86,12 +86,12 @@ public class SpreadSheetIntegration {
 			throws MalformedURLException, IOException, ServiceException {
 		// Instantiate and authorize a new SpreadsheetService object.
 		// entries.
-		URL SPREADSHEET_FEED_URL = new URL(
+		final URL SPREADSHEET_FEED_URL = new URL(
 				"https://spreadsheets.google.com/feeds/spreadsheets/private/full");
 		// Make a request to the API and get all spreadsheets.
-		SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL,
+		final SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL,
 				SpreadsheetFeed.class);
-		List<com.google.gdata.data.spreadsheet.SpreadsheetEntry> spreadsheets = feed
+		final List<com.google.gdata.data.spreadsheet.SpreadsheetEntry> spreadsheets = feed
 				.getEntries();
 		return spreadsheets;
 	}
@@ -100,12 +100,12 @@ public class SpreadSheetIntegration {
 			String sheetName) {
 		try {
 
-			SpreadsheetQuery spreadsheetQuery = new SpreadsheetQuery(new URL(
+			final SpreadsheetQuery spreadsheetQuery = new SpreadsheetQuery(new URL(
 					GOOGLE_DRIVE_FEED_URL_STRING));
 			spreadsheetQuery.setTitleQuery(sheetName);
 			spreadsheetQuery.setTitleExact(true);
 
-			SpreadsheetFeed spreadsheet = service.getFeed(spreadsheetQuery,
+			final SpreadsheetFeed spreadsheet = service.getFeed(spreadsheetQuery,
 					SpreadsheetFeed.class);
 
 			if (spreadsheet.getEntries() != null
@@ -114,7 +114,7 @@ public class SpreadSheetIntegration {
 			} else {
 				return null;
 			}
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			ex.printStackTrace();
 		}
 
@@ -124,39 +124,39 @@ public class SpreadSheetIntegration {
 	private static WorksheetEntry getWorkSheet(SpreadsheetService service,
 			String sheetName, String workSheetName) {
 		try {
-			SpreadsheetEntry spreadsheet = getSpreadsheet(service, sheetName);
+			final SpreadsheetEntry spreadsheet = getSpreadsheet(service, sheetName);
 
 			if (spreadsheet != null) {
-				WorksheetFeed worksheetFeed = service.getFeed(
+				final WorksheetFeed worksheetFeed = service.getFeed(
 						spreadsheet.getWorksheetFeedUrl(), WorksheetFeed.class);
-				List<WorksheetEntry> worksheets = worksheetFeed.getEntries();
+				final List<WorksheetEntry> worksheets = worksheetFeed.getEntries();
 
-				for (WorksheetEntry worksheetEntry : worksheets) {
-					String wktName = worksheetEntry.getTitle().getPlainText();
+				for (final WorksheetEntry worksheetEntry : worksheets) {
+					final String wktName = worksheetEntry.getTitle().getPlainText();
 					if (wktName.equals(workSheetName)) {
 						return worksheetEntry;
 					}
 				}
 			}
-		} catch (Exception ex) {
+		} catch (final Exception ignore) {
 		}
 
 		return null;
 	}
 
 	private static Map<String, Object> getRowData(ListEntry row) {
-		Map<String, Object> rowValues = new HashMap<String, Object>();
-		for (String tag : row.getCustomElements().getTags()) {
-			Object value = row.getCustomElements().getValue(tag);
+		final Map<String, Object> rowValues = new HashMap<String, Object>();
+		for (final String tag : row.getCustomElements().getTags()) {
+			final Object value = row.getCustomElements().getValue(tag);
 			rowValues.put(tag, value);
 		}
 		return rowValues;
 	}
 
 	private static ListEntry createRow(Map<String, Object> rowValues) {
-		ListEntry row = new ListEntry();
-		for (String columnName : rowValues.keySet()) {
-			Object value = rowValues.get(columnName);
+		final ListEntry row = new ListEntry();
+		for (final String columnName : rowValues.keySet()) {
+			final Object value = rowValues.get(columnName);
 			row.getCustomElements().setValueLocal(columnName,
 					String.valueOf(value));
 		}
@@ -164,8 +164,8 @@ public class SpreadSheetIntegration {
 	}
 
 	private static void updateRow(ListEntry row, Map<String, Object> rowValues) {
-		for (String columnName : rowValues.keySet()) {
-			Object value = rowValues.get(columnName);
+		for (final String columnName : rowValues.keySet()) {
+			final Object value = rowValues.get(columnName);
 			row.getCustomElements().setValueLocal(columnName,
 					String.valueOf(value));
 		}

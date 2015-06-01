@@ -1,5 +1,6 @@
 *~
 target
+.idea
 .settings
 atoken.txt
 rtoken.txt
