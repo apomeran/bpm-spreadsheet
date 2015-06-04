@@ -4,7 +4,7 @@ import com.it.itba.bpm.model.entry.SchoolEntry;
 
 import java.util.List;
 
-public class ContactForm
+public class ContactForm 
 {
 
 	private List<SchoolEntry> entries;
@@ -31,6 +31,7 @@ public class ContactForm
 	public void setTitle(String title) {
 		this.title = title;
 	}
+
 
 
 }

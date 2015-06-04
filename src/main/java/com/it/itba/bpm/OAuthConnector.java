@@ -1,5 +1,17 @@
 package com.it.itba.bpm;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
@@ -10,13 +22,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.gdata.util.ServiceException;
 
-import java.io.*;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-public class OAuthConnector
-{
+public class OAuthConnector {
 
 	// Retrieve the CLIENT_ID and CLIENT_SECRET from an APIs Console project:
 	// https://code.google.com/apis/console
@@ -26,7 +32,10 @@ public class OAuthConnector
 	// applications.
 	static String REDIRECT_URI;
 	// Add other requested scopes.
-	static List<String> SCOPES = Collections.singletonList("https://spreadsheets.google.com/feeds");
+	static List<String> SCOPES = Arrays.asList(
+			"https://spreadsheets.google.com/feeds",
+			"https://spreadsheets.google.com/feeds/spreadsheets/private/full",
+			"https://www.googleapis.com/auth/drive");
 
 	/**
 	 * Retrieve OAuth 2.0 credentials.
@@ -46,7 +55,8 @@ public class OAuthConnector
 		System.out.println(authorizationUrl + "&access_type=offline");
 
 		// Read the authorization code from the standard input stream.
-		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		final BufferedReader in = new BufferedReader(new InputStreamReader(
+				System.in));
 		System.out.println("What is the authorization code?");
 		final String code = in.readLine();
 		// End of Step 1 <--
@@ -152,11 +162,11 @@ public class OAuthConnector
 		return prop;
 	}
 
-	public static void main(String args[]) throws IOException, ServiceException {
+	public static void main(String args[]) throws IOException, ServiceException, IllegalArgumentException, IllegalAccessException {
 		final Properties properties = loadProperties();
 		CLIENT_ID = properties.getProperty("client_id");
 		CLIENT_SECRET = properties.getProperty("client_secret");
-		REDIRECT_URI = properties.getProperty("http://localhost:8089/callback");
+		REDIRECT_URI = properties.getProperty("redirect_uri");
 
 		Credential credential = getRefreshToken();
 		if (credential == null) { // First time calling
