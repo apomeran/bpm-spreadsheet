@@ -1,37 +1,24 @@
 package com.it.itba.bpm.model.form;
 
-import com.it.itba.bpm.model.entry.SchoolEntry;
-
 import java.util.List;
 
-public class ContactForm 
-{
+import com.it.itba.bpm.model.entry.FormEntry;
 
-	private List<SchoolEntry> entries;
-	private String title;
+public class ContactForm extends Form {
 
-	public ContactForm(String title, List<SchoolEntry> entries) {
+	private List<FormEntry> entries;
+
+	public ContactForm(String title, List<FormEntry> entries) {
 		super();
-		this.title = title;
 		this.entries = entries;
 	}
 
-	public List<SchoolEntry> getEntries() {
+	public List<FormEntry> getEntries() {
 		return entries;
 	}
 
-	public void setEntries(List<SchoolEntry> entries) {
+	public void setEntries(List<FormEntry> entries) {
 		this.entries = entries;
 	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-
 
 }

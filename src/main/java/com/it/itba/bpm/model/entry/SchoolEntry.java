@@ -5,7 +5,7 @@ import com.it.itba.bpm.model.Status;
 
 import java.io.Serializable;
 
-public class SchoolEntry implements Serializable
+public class SchoolEntry extends FormEntry implements Serializable
 {
 
 	private static final long serialVersionUID = 1L;

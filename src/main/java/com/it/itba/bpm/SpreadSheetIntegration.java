@@ -7,13 +7,9 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-// ...
-import java.util.Map;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.gdata.client.spreadsheet.SpreadsheetQuery;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.DateTime;
 import com.google.gdata.data.spreadsheet.CellEntry;
@@ -26,13 +22,18 @@ import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.data.spreadsheet.WorksheetFeed;
 import com.google.gdata.util.ServiceException;
 import com.it.itba.bpm.model.Status;
+import com.it.itba.bpm.model.entry.ActiveSchoolEntry;
+import com.it.itba.bpm.model.entry.FormEntry;
 import com.it.itba.bpm.model.entry.SchoolEntry;
+import com.it.itba.bpm.model.form.ActiveSchoolsForm;
 import com.it.itba.bpm.model.form.ContactForm;
+import com.it.itba.bpm.model.form.Form;
+
+// ...
 
 public class SpreadSheetIntegration {
 
 	final static String GOOGLE_DRIVE_FEED_URL_STRING = "https://spreadsheets.google.com/feeds/spreadsheets/private/full";
-	private static final String SPREADSHEET_SERVICE_URL = "https://spreadsheets.google.com/feeds/spreadsheets/private/full";
 	private static SpreadsheetService service;
 
 	static void init(Credential credential) throws IOException,
@@ -41,22 +42,41 @@ public class SpreadSheetIntegration {
 		service = new SpreadsheetService("Aplication-name");
 		service.setOAuth2Credentials(credential);
 
+		Form activeSchoolsForm = mockActiveSchoolsForm();
+
+		Form contactForm = mockContactFormEntry();
+
+		populateSpreadsheetWithForm(service, contactForm, "ContactForm");
+		populateSpreadsheetWithForm(service, activeSchoolsForm,
+				"ActiveSchoolsForm");
+		// printDocumentsTitles();
+	}
+
+	private static Form mockActiveSchoolsForm() {
+		FormEntry entry = new ActiveSchoolEntry();
+		List<FormEntry> activeSchoolEntries = new ArrayList<FormEntry>();
+		activeSchoolEntries.add(entry);
+		Form activeSchoolForm = new ActiveSchoolsForm("Active Schools Form",
+				activeSchoolEntries);
+		return activeSchoolForm;
+	}
+
+	public static Form mockContactFormEntry() {
+
 		SchoolEntry entry = new SchoolEntry("SchoolName", "Zone",
 				"Neighborhood", "TElephone", "email", "contact", "mode", "map",
 				"volunteer", true, true, DateTime.now(), "comments",
 				DateTime.now(), "meetingComments", Status.ACCEPTED,
 				"statusComments");
-
-		List<SchoolEntry> entries = new ArrayList<SchoolEntry>();
-		entries.add(entry);
-		ContactForm form = new ContactForm("Contact Form", entries);
-		populateSpreadsheet(service, form);
-		// printDocumentsTitles();
+		List<FormEntry> contactFormEntry = new ArrayList<FormEntry>();
+		contactFormEntry.add(entry);
+		Form contactForm = new ContactForm("Contact Form", contactFormEntry);
+		return contactForm;
 	}
 
-	private static void populateSpreadsheet(SpreadsheetService service,
-			ContactForm form) throws IOException, ServiceException,
-			IllegalArgumentException, IllegalAccessException {
+	private static void populateSpreadsheetWithForm(SpreadsheetService service,
+			Form form, String spreadsheetName) throws IOException,
+			ServiceException, IllegalArgumentException, IllegalAccessException {
 		// Define the URL to request. This should never change.
 		URL SPREADSHEET_FEED_URL = new URL(
 				"https://spreadsheets.google.com/feeds/spreadsheets/private/full");
@@ -72,7 +92,16 @@ public class SpreadSheetIntegration {
 
 		// TODO: Choose a spreadsheet more intelligently based on your
 		// app's needs.
-		SpreadsheetEntry spreadsheet = spreadsheets.get(0);
+		SpreadsheetEntry spreadsheet = null;
+		for (SpreadsheetEntry spreadsheetEntry : spreadsheets) {
+			if (spreadsheetEntry.getTitle().getPlainText()
+					.equals(spreadsheetName))
+				spreadsheet = spreadsheetEntry;
+		}
+
+		if (spreadsheet == null)
+			throw new IllegalStateException("Spreadsheet Not Found");
+
 		System.out.println(spreadsheet.getTitle().getPlainText());
 
 		// Get the first worksheet of the first spreadsheet.
@@ -90,11 +119,10 @@ public class SpreadSheetIntegration {
 		// Create a local representation of the new row.
 		ListEntry row = new ListEntry();
 
-		
 		// Use reflection to populate with Contact Form
-		for (SchoolEntry schoolEntry : form.getEntries()) {
+		for (FormEntry schoolEntry : form.getEntries()) {
 			for (Field field : SchoolEntry.class.getDeclaredFields()) {
-				if (!Modifier.isStatic(field.getModifiers())){
+				if (!Modifier.isStatic(field.getModifiers())) {
 					field.setAccessible(true);
 					row.getCustomElements().setValueLocal(field.getName(),
 							field.get(schoolEntry).toString());
@@ -166,84 +194,6 @@ public class SpreadSheetIntegration {
 		final List<com.google.gdata.data.spreadsheet.SpreadsheetEntry> spreadsheets = feed
 				.getEntries();
 		return spreadsheets;
-	}
-
-	private static SpreadsheetEntry getSpreadsheet(SpreadsheetService service,
-			String sheetName) {
-		try {
-
-			final SpreadsheetQuery spreadsheetQuery = new SpreadsheetQuery(
-					new URL(GOOGLE_DRIVE_FEED_URL_STRING));
-			spreadsheetQuery.setTitleQuery(sheetName);
-			spreadsheetQuery.setTitleExact(true);
-
-			final SpreadsheetFeed spreadsheet = service.getFeed(
-					spreadsheetQuery, SpreadsheetFeed.class);
-
-			if (spreadsheet.getEntries() != null
-					&& spreadsheet.getEntries().size() == 1) {
-				return spreadsheet.getEntries().get(0);
-			} else {
-				return null;
-			}
-		} catch (final Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
-	}
-
-	private static WorksheetEntry getWorkSheet(SpreadsheetService service,
-			String sheetName, String workSheetName) {
-		try {
-			final SpreadsheetEntry spreadsheet = getSpreadsheet(service,
-					sheetName);
-
-			if (spreadsheet != null) {
-				final WorksheetFeed worksheetFeed = service.getFeed(
-						spreadsheet.getWorksheetFeedUrl(), WorksheetFeed.class);
-				final List<WorksheetEntry> worksheets = worksheetFeed
-						.getEntries();
-
-				for (final WorksheetEntry worksheetEntry : worksheets) {
-					final String wktName = worksheetEntry.getTitle()
-							.getPlainText();
-					if (wktName.equals(workSheetName)) {
-						return worksheetEntry;
-					}
-				}
-			}
-		} catch (final Exception ignore) {
-		}
-
-		return null;
-	}
-
-	private static Map<String, Object> getRowData(ListEntry row) {
-		final Map<String, Object> rowValues = new HashMap<String, Object>();
-		for (final String tag : row.getCustomElements().getTags()) {
-			final Object value = row.getCustomElements().getValue(tag);
-			rowValues.put(tag, value);
-		}
-		return rowValues;
-	}
-
-	private static ListEntry createRow(Map<String, String> rowValues) {
-		final ListEntry row = new ListEntry();
-		for (final String columnName : rowValues.keySet()) {
-			final Object value = rowValues.get(columnName);
-			row.getCustomElements().setValueLocal(columnName,
-					String.valueOf(value));
-		}
-		return row;
-	}
-
-	private static void updateRow(ListEntry row, Map<String, Object> rowValues) {
-		for (final String columnName : rowValues.keySet()) {
-			final Object value = rowValues.get(columnName);
-			row.getCustomElements().setValueLocal(columnName,
-					String.valueOf(value));
-		}
 	}
 
 }
