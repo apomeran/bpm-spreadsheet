@@ -10,6 +10,7 @@ public class SchoolEntry extends FormEntry implements Serializable
 
 	private static final long serialVersionUID = 1L;
 	private String comments;
+	
 	// Contact
 	private String contact;
 	private String email;

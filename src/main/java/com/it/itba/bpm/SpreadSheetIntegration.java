@@ -49,6 +49,11 @@ public class SpreadSheetIntegration {
 		populateSpreadsheetWithForm(service, contactForm, "ContactForm");
 		populateSpreadsheetWithForm(service, activeSchoolsForm,
 				"ActiveSchoolsForm");
+
+		// Un metodo que te devuelva todos los colegios. Nombre de colegio -
+		// responsable. Devuelvo una collection del POJO.
+		// Hacer un CRUD para poder modificar rows. EL id es el mail.
+
 		// printDocumentsTitles();
 	}
 
@@ -90,9 +95,9 @@ public class SpreadSheetIntegration {
 			// TODO: There were no spreadsheets, act accordingly.
 		}
 
-		// TODO: Choose a spreadsheet more intelligently based on your
-		// app's needs.
 		SpreadsheetEntry spreadsheet = null;
+
+		// Find spreadsheet by Name
 		for (SpreadsheetEntry spreadsheetEntry : spreadsheets) {
 			if (spreadsheetEntry.getTitle().getPlainText()
 					.equals(spreadsheetName))
@@ -105,8 +110,6 @@ public class SpreadSheetIntegration {
 		System.out.println(spreadsheet.getTitle().getPlainText());
 
 		// Get the first worksheet of the first spreadsheet.
-		// TODO: Choose a worksheet more intelligently based on your
-		// app's needs.
 		WorksheetFeed worksheetFeed = service.getFeed(
 				spreadsheet.getWorksheetFeedUrl(), WorksheetFeed.class);
 		List<WorksheetEntry> worksheets = worksheetFeed.getEntries();
@@ -145,6 +148,7 @@ public class SpreadSheetIntegration {
 		// Get the first worksheet of the first spreadsheet.
 		// TODO: Choose a worksheet more intelligently based on your
 		// app's needs.
+
 		final WorksheetFeed worksheetFeed = service.getFeed(
 				spreadsheet.getWorksheetFeedUrl(), WorksheetFeed.class);
 		final List<WorksheetEntry> worksheets = worksheetFeed.getEntries();
